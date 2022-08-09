@@ -30,11 +30,11 @@ const cartSlice = createSlice({
 
       //update Amount,Total
       let { total, amount } = state.cart.reduce(
-        (cartTotal, item) => {
+        ({ amount, total }, item) => {
           const { quantity, price } = item;
-          cartTotal.amount += quantity;
-          cartTotal.total += quantity * price;
-          return cartTotal;
+          amount += quantity;
+          total += quantity * price;
+          return { amount, total };
         },
         { total: 0, amount: 0 }
       );
@@ -42,21 +42,16 @@ const cartSlice = createSlice({
       state.total = total;
     },
     increase: (state, action) => {
-      const newCart = state.cart.map((item) => {
-        if (item.id === action.payload) {
-          return { ...item, quantity: item.quantity + 1 };
-        }
-        return item;
-      });
-      state.cart = newCart;
+      const cartItem = state.cart.find((item) => item.id === action.payload);
+      cartItem.quantity += 1;
 
       //update Amount,Total
       let { total, amount } = state.cart.reduce(
-        (cartTotal, item) => {
+        ({ amount, total }, item) => {
           const { quantity, price } = item;
-          cartTotal.amount += quantity;
-          cartTotal.total += quantity * price;
-          return cartTotal;
+          amount += quantity;
+          total += quantity * price;
+          return { amount, total };
         },
         { total: 0, amount: 0 }
       );
@@ -65,19 +60,11 @@ const cartSlice = createSlice({
     },
     decrease: (state, action) => {
       const cartItem = state.cart.find((item) => item.id === action.payload);
-      let newCart = [];
       if (cartItem.quantity === 1)
-        newCart = state.cart.filter((item) => {
+        state.cart = state.cart.filter((item) => {
           return item.id !== action.payload;
         });
-      else
-        newCart = state.cart.map((item) => {
-          if (item.id === action.payload) {
-            return { ...item, quantity: item.quantity - 1 };
-          }
-          return item;
-        });
-      state.cart = newCart;
+      else cartItem.quantity -= 1;
 
       //update Amount,Total
       let { total, amount } = state.cart.reduce(
